@@ -209,19 +209,25 @@ export default class TestScheduler {
     }
 
     updateSnapshotState();
+
     aggregatedResults.wasInterrupted = watcher.isInterrupted();
-    await this._dispatcher.onRunComplete(contexts, aggregatedResults);
 
     const anyTestFailures = !(
       aggregatedResults.numFailedTests === 0 &&
       aggregatedResults.numRuntimeErrorTestSuites === 0
     );
-    const anyReporterErrors = this._dispatcher.hasErrors();
 
     aggregatedResults.success = !(
       anyTestFailures ||
-      aggregatedResults.snapshot.failure ||
-      anyReporterErrors
+      aggregatedResults.snapshot.failure
+    );
+
+    await this._dispatcher.onRunComplete(contexts, aggregatedResults);
+    const anyReporterErrors = this._dispatcher.hasErrors();
+
+    aggregatedResults.success = (
+      aggregatedResults.success &&
+      !anyReporterErrors
     );
 
     return aggregatedResults;
